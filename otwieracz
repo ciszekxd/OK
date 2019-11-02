@@ -1,0 +1,73 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+using namespace std;
+class Otwieracz {
+public:
+    ifstream plik;
+    int machines;
+    int zadania;
+    int** timesTable;
+    int** machinesTable;
+
+    Otwieracz(string path){
+        plik.open(path, ios::in);
+        getZadania();
+        getMachines();
+        timesTable = maketab(zadania,zadania);
+        machinesTable = maketab(zadania,zadania);
+        beasley();
+
+    }
+protected:
+    void getZadania() {
+        plik.seekg(0, ios_base::beg);
+        plik >> zadania;
+    }
+    void getMachines(){
+        plik.seekg(0, ios_base::beg);
+        int x;
+        plik >> x;
+        plik >> machines;
+
+    }
+
+    int** maketab(int a, int b) {
+        int **x = new int *[b];
+        for (int i = 0; i < b; ++i) {
+            x[i] = new int[a];
+        }
+        return x;
+    }
+
+    void beasley() {
+        int x, y;
+        //plik.open("C:\\Users\\1\\Desktop\\struk.txt");
+        //plik.open("source.txt");
+        if (!plik.is_open()) {
+            cout << "Unable to open file";
+            exit(1); // terminate with error
+        }
+        plik.seekg(0, ios_base::beg);
+        plik >> y;
+        plik >> x;
+        //time = maketab(y,y);
+        //machine = maketab(y,y);
+        for (int i = 0; i < y; ++i) {
+            for (int j = 0; j < y; ++j) {
+                plik >> machinesTable[i][j];
+                plik >> timesTable[i][j];
+            }
+        }
+        plik.close();
+    }
+};
+int main(){
+    ifstream plik;
+    string path = "C:\\Users\\1\\Desktop\\abz5.txt";
+    Otwieracz bulgaria(path);
+    cout << bulgaria.zadania << endl;
+    cout << bulgaria.machines << endl;
+    cout << bulgaria.machinesTable[3][6] << endl;
+    return 0;
+}
