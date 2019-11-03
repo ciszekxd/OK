@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -10,14 +11,22 @@ public:
     int** timesTable;
     int** machinesTable;
 
-    Otwieracz(string path){
+    Otwieracz(string path, char* t){
         plik.open(path, ios::in);
         getZadania();
         getMachines();
         timesTable = maketab(zadania,zadania);
         machinesTable = maketab(zadania,zadania);
-        beasley();
-
+        if(t == "b"){
+            beasley();
+        }
+        else if (t == "t"){
+            tailard();
+        }
+        else {
+            cout << " mode not established "
+            exit(1);
+        }
     }
 protected:
     void getZadania() {
@@ -39,7 +48,29 @@ protected:
         }
         return x;
     }
-
+    void tailard() {
+        if (!plik.is_open()) {
+            cout << "Unable to open file";
+            exit(1);
+        }
+        int x;
+        plik.seekg(0, ios_base::beg);
+        for(int i=0; i<6;i++){
+            plik >> x;
+            }
+        plik.seekg(7 ,ios_base::cur);
+        for (int i = 0; i < zadania; ++i) {
+            for (int j = 0; j < zadania; ++j) {
+                plik >> timesTable[i][j];
+            }
+        }  
+        plik.seekg(10 ,ios_base::cur);
+        for (int i = 0; i < zadania; ++i) {
+            for (int j = 0; j < zadania; ++j) {
+                plik >> machinesTable[i][j];
+            }
+        }
+    }
     void beasley() {
         int x, y;
         //plik.open("C:\\Users\\1\\Desktop\\struk.txt");
@@ -53,8 +84,8 @@ protected:
         plik >> x;
         //time = maketab(y,y);
         //machine = maketab(y,y);
-        for (int i = 0; i < y; ++i) {
-            for (int j = 0; j < y; ++j) {
+        for (int i = 0; i < zadania; ++i) {
+            for (int j = 0; j < zadania; ++j) {
                 plik >> machinesTable[i][j];
                 plik >> timesTable[i][j];
             }
@@ -64,10 +95,11 @@ protected:
 };
 int main(){
     ifstream plik;
-    string path = "C:\\Users\\1\\Desktop\\abz5.txt";
-    Otwieracz bulgaria(path);
+    string path = "tai01.txt";
+    Otwieracz bulgaria(path, "t");
     cout << bulgaria.zadania << endl;
     cout << bulgaria.machines << endl;
+    cout << bulgaria.timesTable[3][6] << endl;
     cout << bulgaria.machinesTable[3][6] << endl;
     return 0;
 }
