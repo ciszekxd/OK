@@ -1,7 +1,8 @@
 
+
 #include <iostream>
 #include <fstream>
-#include <set>
+#include <vector>
 
 using namespace std;
 class Otwieracz {
@@ -17,8 +18,8 @@ public:
         plik.open(path, ios::in);
         getZadania();
         getMachines();
-        timesTable = maketab(zadania,zadania);
-        machinesTable = maketab(zadania,zadania);
+        timesTable = maketab(machines,zadania);
+        machinesTable = maketab(machines,zadania);
         if(t == "b"){
             beasley();
         }
@@ -88,7 +89,7 @@ protected:
         //time = maketab(y,y);
         //machine = maketab(y,y);
         for (int i = 0; i < zadania; ++i) {
-            for (int j = 0; j < zadania; ++j) {
+            for (int j = 0; j < machines; ++j) {
                 plik >> machinesTable[i][j];
                 plik >> timesTable[i][j];
             }
@@ -105,34 +106,45 @@ protected:
 };
 class Solver{
 public:
-    set<int*> validProcesses;
-    int time_dim;
-    int machine_dim;
+    vector<int*> validProcesses;
+    int dimX;
+    int dimY;
     int** machinesT;
     int** timesT;
 
-    Solver (int t_dim, int m_dim, int** times, int** machines){
-        time_dim = t_dim;
-        machine_dim = m_dim;
+    Solver (int dim_X, int dim_Y, int** times, int** machines){
+        dimX = dim_X;
+        dimY = dim_Y;
         timesT = times;
         machinesT = machines;
     }
+    void suportRmove(std::vector<int*> vec,int ele){
+        int ite=0;
+        while(ite<vec.size()){
+            if(vec[ele]==validProcesses[ite]){
+                validProcesses.erase(validProcesses.begin()+ite);
+                break;
+            }
+            ite++;
+        }
+    }
     int** setProcessor(int** procT, int procAmount) {
-
         int* arm;
+        int x;
+        vector<int*> imageV = validProcesses;
         for (int i = 0; i < procAmount; ++i) {
-            set<int*>::iterator iterator = validProcesses.begin();
-            while (iterator != validProcesses.end()) {
+            x=0;
+            while (x<imageV.size()) {
                 if (procT[i][0]==-1){
-                    arm = *iterator;
+                    arm = imageV[x];
                     if(i == machinesT[arm[0]][arm[1]]){
                         procT[i][0] = timesT[arm[0]][arm[1]];
                         procT[i][1] = arm[0];
                         procT[i][2] = arm[1];
-                        validProcesses.erase(iterator);
+                        suportRmove(imageV,x);
                     }
                 }
-            iterator++;
+            x++;
             }
         }
         return procT;
@@ -141,48 +153,61 @@ public:
     void upadteTimesT(int** newTT){
         timesT = newTT;
     }
-    int* find_min_time(int col){
-        int ans[3];
-        int* answ = ans;
-        int min = 2147483647,x,y;
-        for (int i = 0; i < time_dim ; ++i) {
-            if (timesT[i][col] < min){
-                    min = timesT[i][col];
-                    x = col;
-                    y = i;
-            }
+//    int* find_min_time(int col){
+//        int ans[3];
+//        int* answ = ans;
+//        int min = 2147483647,x,y;
+//        for (int i = 0; i < time_dim ; ++i) {
+//            if (timesT[i][col] < min){
+//                    min = timesT[i][col];
+//                    x = col;
+//                    y = i;
+//            }
+//        }
+//        ans[0] = min;
+//        ans[1] = y;
+//        ans[2] = x;
+//        return answ;
+//    }
+    int setCheck(int* exe) {
+        int ite=0;
+        while (ite < validProcesses.size()) {
+            int* x = validProcesses[ite];
+            if ((x[0] == exe[0]) && (x[1] == exe[1])) return 1;
+            ite++;
         }
-        ans[0] = min;
-        ans[1] = y;
-        ans[2] = x;
-        return answ;
+        return 0;
     }
-    int hardcheck(int* exe){
-        set<int*>::iterator iterator = validProcesses.begin();
-        int* x = *iterator;
-        while(iterator != validProcesses.end()){
-
-            if((x[0]==exe[0])&&(x[1]==exe[1])) return 0;
-            iterator++;
+    int processorCheck(int**procT,int procAmount,int* x){
+        for (int k = 0; k < procAmount; ++k) {
+            if( (procT[k][1]==x[0]) && (procT[k][2]==x[1]) ) return 1;
         }
-        return 1;
-
+        return 0;
     }
-    void prepareValidProcesses(){
+
+    void prepareValidProcesses(int** procT, int procAmount){
 
         int j=0;
-
-        for (int i = 0; i < time_dim; ++i) {
+        for (int i = 0; i < dimY; ++i) {
             if (timesT[i][j] == -1) {
                 j++;
                 i--;
                 continue;
             }
-            int* x = new int[2];;
+            int* x = new int[2];
             x[0] = i;
             x[1] = j;
-            if (!hardcheck(x)) continue;
-            validProcesses.insert(x);
+            if(processorCheck(procT,procAmount,x)){
+                j = 0;
+                continue;
+            }
+            if(setCheck(x)) {
+                j = 0;
+                continue;
+            }
+            //if(timesT[i][j]==-2) continue;
+            validProcesses.push_back(x);
+            j=0;
         }
     }
 
@@ -195,14 +220,17 @@ public:
     int** finishLineup;
 
 
-    Processor(int core,int execs){
+    Processor(int core,int dimX,int dimY){
         procek = maketab(3, core);
         for (int i = 0; i < core; ++i) {
-            procek[i][0] = -1;
+            for (int j = 0; j < 3; ++j) {
+                procek[i][j] = -1;
+
+            }
         }
         coreAmount = core;
         T = 0;
-        finishLineup = maketab(execs,execs);
+        finishLineup = maketab(dimX,dimY);
     }
     void procekUpdate(int** uproc){
         procek = uproc;
@@ -238,43 +266,69 @@ public:
         return x;
     }
 };
-void poka(int**T,int dim) {
-    for (int i = 0; i < dim; ++i) {
-        for (int j = 0; j < dim; ++j) {
+void poka(int**T,int dimY,int dimX) {
+    for (int i = 0; i < dimY; ++i) {
+        for (int j = 0; j < dimX; ++j) {
             cout << T[i][j];
             cout << "  ";
         }
         cout << endl;
     }
 }
-int checkend(int** matrix,int exe){
-    for (int i = 0; i < exe; ++i) {
-        if(matrix[i][exe-1] != -1) return 1;
+void showProc(int**proc,int core){
+    for (int i = 0; i < core; ++i) {
+        cout << proc[i][0];
+        cout << "  ";
+        cout << proc[i][1];
+        cout << "  ";
+        cout << proc[i][2];
+        cout << endl;
+    }
+}
+int checkend(int** matrix,int dimX, int dimY){
+    for (int i = 0; i < dimY; ++i) {
+        if(matrix[i][dimX-1] != -1) return 1;
     }
     return 0;
 }
 int main(){
-    string path = "/home/ciszek/OK/testcase.txt";
+    string path = "/home/ciszek/OK/la32.txt";
     Otwieracz bulgaria(path, "b");
+    poka(bulgaria.timesTable,bulgaria.zadania,bulgaria.machines);
+    cout << "czasyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<< endl;
+    poka(bulgaria.machinesTable,bulgaria.zadania,bulgaria.machines);
+    cout << "maszynyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<< endl;
 
-    Solver case1(bulgaria.zadania, bulgaria.machines, bulgaria.timesTable, bulgaria.machinesTable );
 
-    Processor intel(bulgaria.machines, bulgaria.zadania);
+    Solver case1(bulgaria.machines, bulgaria.zadania, bulgaria.timesTable, bulgaria.machinesTable );
 
-    
+    Processor intel(bulgaria.machines, case1.dimX, case1.dimY);
+
+
     //#######pętla###############
     int obs=1;
     while(obs) {
-        case1.prepareValidProcesses();
-        //problem
+        case1.prepareValidProcesses(intel.procek,intel.coreAmount);
+
         intel.procekUpdate(case1.setProcessor(intel.procek, intel.coreAmount));
-        // idea części dalszej
+
         intel.makeProcessorStep();
+
         case1.upadteTimesT(intel.freeProcessor(case1.timesT));
-        obs = checkend(case1.timesT,bulgaria.zadania);
-        //###########################
+
+        obs = checkend(case1.timesT,case1.dimX,case1.dimY);
+        cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << endl;
+        poka(intel.finishLineup,case1.dimY,case1.dimX);
+        cout << "koncowe ustawienie###################################" << endl;
+        poka(case1.timesT, case1.dimY, case1.dimX);
+        cout << "czasy wykonywania zadan###################################" << endl;
+        cout << intel.T << endl;
+        cout << "aktualny czas###################################" << endl;
+        showProc(intel.procek,intel.coreAmount);
+        cout << "stan procesora###################################" << endl;
     }
     //rezultatem ma być intel.finishlineup
-    poka(intel.finishLineup,intel.coreAmount);
+    //poka(intel.finishLineup,intel.coreAmount);
     return 0;
 }
+
