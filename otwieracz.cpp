@@ -64,14 +64,20 @@ protected:
             }
         plik.seekg(7 ,ios_base::cur);
         for (int i = 0; i < zadania; ++i) {
-            for (int j = 0; j < zadania; ++j) {
+            for (int j = 0; j < machines; ++j) {
                 plik >> timesTable[i][j];
             }
         }  
         plik.seekg(10 ,ios_base::cur);
         for (int i = 0; i < zadania; ++i) {
-            for (int j = 0; j < zadania; ++j) {
+            for (int j = 0; j < machines; ++j) {
                 plik >> machinesTable[i][j];
+            }
+        }
+        //zmniejszenie maszyn o 1
+        for (int k = 0; k < zadania; ++k) {
+            for (int i = 0; i < machines; ++i) {
+                machinesTable[k][i] -= 1;
             }
         }
     }
@@ -292,8 +298,8 @@ int checkend(int** matrix,int dimX, int dimY){
     return 0;
 }
 int main(){
-    string path = "/home/ciszek/OK/la32.txt";
-    Otwieracz bulgaria(path, "b");
+    string path = "/home/ciszek/OK/tai18.txt";
+    Otwieracz bulgaria(path, "t");
     poka(bulgaria.timesTable,bulgaria.zadania,bulgaria.machines);
     cout << "czasyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<< endl;
     poka(bulgaria.machinesTable,bulgaria.zadania,bulgaria.machines);
@@ -331,4 +337,5 @@ int main(){
     //poka(intel.finishLineup,intel.coreAmount);
     return 0;
 }
+
 
