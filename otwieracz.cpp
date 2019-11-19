@@ -1,5 +1,4 @@
 
-
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -30,7 +29,6 @@ public:
             cout << " mode not established ";
             exit(1);
         }
-        merge();
     }
 protected:
     void getZadania() {
@@ -80,6 +78,7 @@ protected:
                 machinesTable[k][i] -= 1;
             }
         }
+        plik.close();
     }
     void beasley() {
         int x, y;
@@ -297,9 +296,16 @@ int checkend(int** matrix,int dimX, int dimY){
     }
     return 0;
 }
-int main(){
-    string path = "/home/ciszek/OK/tai18.txt";
-    Otwieracz bulgaria(path, "t");
+int main(int argc, char* argv[]){
+    if (argc > 3){
+        cout << "too much arguments was given" << endl;
+        exit(1);
+    } else if (argc < 3){
+        cout << "too few arguments was given" << endl;
+        exit(1);
+    }
+    string path = argv[1];
+    Otwieracz bulgaria(path, argv[2]);
     poka(bulgaria.timesTable,bulgaria.zadania,bulgaria.machines);
     cout << "czasyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<< endl;
     poka(bulgaria.machinesTable,bulgaria.zadania,bulgaria.machines);
