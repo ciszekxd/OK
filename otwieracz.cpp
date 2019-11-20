@@ -56,17 +56,17 @@ protected:
             exit(1);
         }
         int x;
+        string trush;
         plik.seekg(0, ios_base::beg);
-        for(int i=0; i<6;i++){
-            plik >> x;
-            }
-        plik.seekg(7 ,ios_base::cur);
+        getline(plik,trush);
+        getline(plik,trush);
         for (int i = 0; i < zadania; ++i) {
             for (int j = 0; j < machines; ++j) {
                 plik >> timesTable[i][j];
             }
-        }  
-        plik.seekg(10 ,ios_base::cur);
+        }
+        getline(plik,trush);
+        getline(plik,trush);
         for (int i = 0; i < zadania; ++i) {
             for (int j = 0; j < machines; ++j) {
                 plik >> machinesTable[i][j];
@@ -149,7 +149,7 @@ public:
                         suportRmove(imageV,x);
                     }
                 }
-            x++;
+                x++;
             }
         }
         return procT;
@@ -191,29 +191,40 @@ public:
     }
 
     void prepareValidProcesses(int** procT, int procAmount){
-
-        int j=0;
         for (int i = 0; i < dimY; ++i) {
-            if (timesT[i][j] == -1) {
-                j++;
-                i--;
-                continue;
+            for (int j = 0; j < dimX; ++j) {
+                if (timesT[i][j] == -1) continue;
+                int* x = new int[2];
+                x[0] = i;
+                x[1] = j;
+                if(processorCheck(procT,procAmount,x) || setCheck(x)) break;
+                validProcesses.push_back(x);
+                break;
             }
-            int* x = new int[2];
-            x[0] = i;
-            x[1] = j;
-            if(processorCheck(procT,procAmount,x)){
-                j = 0;
-                continue;
-            }
-            if(setCheck(x)) {
-                j = 0;
-                continue;
-            }
-            //if(timesT[i][j]==-2) continue;
-            validProcesses.push_back(x);
-            j=0;
         }
+//        int j=0;
+//        for (int i = 0; i < dimY; ++i) {
+//            if (timesT[i][j] == -1) {
+//                j++;
+//                if(j == dimX-1) continue;
+//                i--;
+//                continue;
+//            }
+//            int* x = new int[2];
+//            x[0] = i;
+//            x[1] = j;
+//            if(processorCheck(procT,procAmount,x)){
+//                j = 0;
+//                continue;
+//            }
+//            if(setCheck(x)) {
+//                j = 0;
+//                continue;
+//            }
+//            //if(timesT[i][j]==-2) continue;
+//            validProcesses.push_back(x);
+//            j=0;
+//        }
     }
 
 };
@@ -297,15 +308,17 @@ int checkend(int** matrix,int dimX, int dimY){
     return 0;
 }
 int main(int argc, char* argv[]){
-    if (argc > 3){
-        cout << "too much arguments was given" << endl;
-        exit(1);
-    } else if (argc < 3){
-        cout << "too few arguments was given" << endl;
-        exit(1);
-    }
-    string path = argv[1];
-    Otwieracz bulgaria(path, argv[2]);
+//    if (argc > 3){
+//        cout << "too much arguments was given" << endl;
+//        exit(1);
+//    } else if (argc < 3){
+//        cout << "too few arguments was given" << endl;
+//        exit(1);
+//    }
+    string path = "C:\\Users\\1\\Desktop\\tai01.txt";
+    Otwieracz bulgaria(path, "t");
+    cout << bulgaria.zadania << endl;
+    cout << bulgaria.machines << endl;
     poka(bulgaria.timesTable,bulgaria.zadania,bulgaria.machines);
     cout << "czasyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"<< endl;
     poka(bulgaria.machinesTable,bulgaria.zadania,bulgaria.machines);
@@ -320,7 +333,7 @@ int main(int argc, char* argv[]){
     //#######pętla###############
     int obs=1;
     while(obs) {
-        case1.prepareValidProcesses(intel.procek,intel.coreAmount);
+        case1.prepareValidProcesses(intel.procek, intel.coreAmount);
 
         intel.procekUpdate(case1.setProcessor(intel.procek, intel.coreAmount));
 
@@ -328,20 +341,21 @@ int main(int argc, char* argv[]){
 
         case1.upadteTimesT(intel.freeProcessor(case1.timesT));
 
-        obs = checkend(case1.timesT,case1.dimX,case1.dimY);
+        obs = checkend(case1.timesT, case1.dimX, case1.dimY);
         cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << endl;
-        poka(intel.finishLineup,case1.dimY,case1.dimX);
+        poka(intel.finishLineup, case1.dimY, case1.dimX);
         cout << "koncowe ustawienie###################################" << endl;
         poka(case1.timesT, case1.dimY, case1.dimX);
         cout << "czasy wykonywania zadan###################################" << endl;
         cout << intel.T << endl;
         cout << "aktualny czas###################################" << endl;
-        showProc(intel.procek,intel.coreAmount);
+        showProc(intel.procek, intel.coreAmount);
         cout << "stan procesora###################################" << endl;
     }
     //rezultatem ma być intel.finishlineup
     //poka(intel.finishLineup,intel.coreAmount);
     return 0;
 }
+
 
 
